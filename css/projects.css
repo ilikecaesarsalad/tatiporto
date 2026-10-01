@@ -313,14 +313,21 @@ html.is-viewing_tatiana { overflow: hidden; }
 }
 .viewer__tips-close_tatiana:hover { color: var(--ink); background: rgba(107, 97, 148, .1); }
 .viewer__tips-close_tatiana svg { width: 16px; height: 16px; }
-.viewer__stage_tatiana { position: relative; flex: 1; min-height: 0; background: var(--deep); }
+.viewer__stage_tatiana {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  background: var(--deep);
+  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
+}
 .viewer__stage_tatiana iframe {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
   border: 0; display: block;
   background: transparent;
   opacity: 0;
-  transition: opacity .5s ease;
+  transition: opacity .4s ease;
 }
 .viewer__stage_tatiana iframe.is-ready_tatiana { opacity: 1; }
 .viewer__stage_tatiana iframe[hidden] { display: none; }

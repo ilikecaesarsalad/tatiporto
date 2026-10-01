@@ -63,9 +63,26 @@ function insetFrom(card) {
   }
 
   function animate(el, keyframes, opts) {
-    if (!el.animate) return Promise.resolve();
-    var a = el.animate(keyframes, opts);
-    return new Promise(function (done) { a.onfinish = done; a.oncancel = done; });
+    if (!el || !el.animate) return Promise.resolve();
+    try {
+      var a = el.animate(keyframes, opts);
+      if (!a) return Promise.resolve();
+      return new Promise(function (done) {
+        var finished = false;
+        function finish() {
+          if (!finished) {
+            finished = true;
+            done();
+          }
+        }
+        a.onfinish = finish;
+        a.oncancel = finish;
+        var duration = (typeof opts === "number" ? opts : (opts && opts.duration) || 0) + 120;
+        setTimeout(finish, Math.max(120, duration));
+      });
+    } catch (err) {
+      return Promise.resolve();
+    }
   }
 
 function open(slug, viewId) {
@@ -175,13 +192,18 @@ function show(id) {
       f = document.createElement("iframe");
       f.title = titleOf(st.card) + (st.views.length > 1 ? ", " + view.label : "");
       f.setAttribute("allow", "autoplay; fullscreen; clipboard-write");
+      var readyTimer = setTimeout(function () {
+        f.classList.add("is-ready_tatiana");
+        if (st.frames[st.current] === f) loading.classList.add("is-done_tatiana");
+      }, 2400);
       f.addEventListener("load", function () {
+        clearTimeout(readyTimer);
         if (f.src === "about:blank") return;
         try { f.contentWindow.addEventListener("pointerdown", function () { setTips(false); }, { once: true }); } catch (e) {}
         setTimeout(function () {
           f.classList.add("is-ready_tatiana");
           if (st.frames[st.current] === f) loading.classList.add("is-done_tatiana");
-        }, 160);
+        }, 120);
       });
       st.frames[id] = f;
       loading.classList.remove("is-done_tatiana");
@@ -244,7 +266,7 @@ function close() {
 document.addEventListener("click", function (e) {
     var trigger = e.target.closest && e.target.closest("[data-open]");
     if (!trigger || viewer.contains(trigger)) return;
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if ((typeof e.button === "number" && e.button !== 0) || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     open(trigger.getAttribute("data-open"), trigger.getAttribute("data-view"));
   });
